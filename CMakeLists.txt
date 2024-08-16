@@ -7,6 +7,8 @@ set(TINYOBJLOADER_SOVERSION 2)
 set(TINYOBJLOADER_VERSION 2.0.0-rc.13)
 set(PY_TARGET "pytinyobjloader")
 
+set(TINYOBJLOADER_FOLDER "Third Party/tinyobjloader")
+
 #optional double precision support
 option(TINYOBJLOADER_USE_DOUBLE "Build library with double precision instead of single (float)" OFF)
 option(TINYOBJLOADER_WITH_PYTHON "Build Python module(for developer). Use pyproject.toml/setup.py to build Python module for end-users" OFF)
@@ -89,6 +91,7 @@ add_sanitizers(${LIBRARY_NAME})
 if(BUILD_SHARED_LIBS)
   set_target_properties(${LIBRARY_NAME} PROPERTIES
     SOVERSION ${TINYOBJLOADER_SOVERSION}
+	FOLDER ${TINYOBJLOADER_FOLDER}
     WINDOWS_EXPORT_ALL_SYMBOLS ON
   )
 endif()
@@ -97,7 +100,10 @@ if(TINYOBJLOADER_USE_DOUBLE)
   target_compile_definitions(${LIBRARY_NAME} PUBLIC TINYOBJLOADER_USE_DOUBLE)
 endif()
 
-set_target_properties(${LIBRARY_NAME} PROPERTIES VERSION ${TINYOBJLOADER_VERSION})
+set_target_properties(${LIBRARY_NAME} PROPERTIES
+	VERSION ${TINYOBJLOADER_VERSION}
+	FOLDER ${TINYOBJLOADER_FOLDER}
+)
 
 target_include_directories(${LIBRARY_NAME} INTERFACE
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
@@ -128,7 +134,10 @@ if (TINYOBJLOADER_WITH_PYTHON)
   pybind11_add_module(${PY_TARGET} ${CMAKE_SOURCE_DIR}/python/bindings.cc ${CMAKE_SOURCE_DIR}/python/tiny_obj_loader.cc)
 
   add_sanitizers(${PY_TARGET})
-  set_target_properties(${PY_TARGET} PROPERTIES OUTPUT_NAME "tinyobjloader")
+  set_target_properties(${PY_TARGET} PROPERTIES
+	OUTPUT_NAME "tinyobjloader"
+	FOLDER ${TINYOBJLOADER_FOLDER}
+  )
 
   # copy .so to jdepp/
   add_custom_command(
@@ -210,12 +219,15 @@ install(FILES
   ${TINYOBJLOADER_PKGCONFIG_DIR}
   )
 
-if(NOT TARGET uninstall)
+if(NOT TARGET tinyobjloader-uninstall)
   configure_file(
     ${CMAKE_CURRENT_SOURCE_DIR}/cmake_uninstall.cmake.in
     ${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake IMMEDIATE @ONLY)
 
   add_custom_target(
-    uninstall COMMAND ${CMAKE_COMMAND} -P
+    tinyobjloader-uninstall COMMAND ${CMAKE_COMMAND} -P
                       ${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake)
+  set_target_properties(tinyobjloader-uninstall PROPERTIES
+	FOLDER ${TINYOBJLOADER_FOLDER}
+  )
 endif()
